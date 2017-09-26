@@ -12,21 +12,26 @@ namespace Examples.Controllers
 {
   public class HomeController : Controller
   {
-    public ActionResult Index()
+    [HttpGet]
+    public ActionResult Index(int securityLevel = 1)
     {
       IndexModel model = new IndexModel();
-      foreach(var command in Enum.GetValues(typeof(CommandEnum)))
+      if (Enum.IsDefined(typeof(SecurityLevelEnum), securityLevel))
       {
-        var com = command.ToString();
-        model.Commands.Add(new CommandModel()
+        model.SecurityLevel = (SecurityLevelEnum)securityLevel;
+        foreach (var command in Enum.GetValues(typeof(CommandEnum)))
         {
-          CommandName = com,
-          CommandText = com.ToLower()
-        });
+          var com = command.ToString();
+          model.Commands.Add(new CommandModel()
+          {
+            CommandName = com,
+            CommandText = com.ToLower()
+          });
+        }
+
+        model.CommandArguments = string.Empty;
+        model.Command = string.Empty;
       }
-      
-      model.CommandArguments = string.Empty;
-      model.Command = string.Empty;
       return View(model);
     }
 

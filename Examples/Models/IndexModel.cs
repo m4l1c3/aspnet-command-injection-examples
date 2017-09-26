@@ -1,4 +1,5 @@
-﻿using Examples.Interfaces;
+﻿using Examples.Enums;
+using Examples.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,7 @@ namespace Examples.Models
 {
   public class IndexModel
   {
+    public SecurityLevelEnum SecurityLevel { get; set; }
     public List<ICommand> Commands { get; set; } = new List<ICommand>();
     public string Command { get; set; }
     public string CommandArguments { get; set; }
