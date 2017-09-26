@@ -10,5 +10,6 @@ namespace Examples.Interfaces
   {
     string CommandName { get; set; }
     string CommandText { get; set; }
+    string Arguments { get; set; }
   }
 }

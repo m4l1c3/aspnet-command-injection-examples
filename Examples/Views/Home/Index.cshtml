@@ -6,6 +6,59 @@
 
 @model IndexModel
 
+@section scripts {
+    <script type="text/javascript">
+        'use strict';
+        var viewModel = {
+            actions: {
+                'executeCommand': '@Url.Action("ProcessCommand", "Home")'
+            }
+        };
+        function processCommandOutput(outputDiv, response) {
+            let output = '<ul id="command-output"></ul>',
+                html = $.parseHTML(output);
+            outputDiv.html(html);
+            response.CommandOutput.forEach(function (item) {
+                $('#command-output').append($.parseHTML('<li>' + item + '</li>'));
+            });
+        }
+        $(document).ready(function () {
+            const command = $('#command'),
+                args = $('#arguments'),
+                outputDiv = $('#command-output'),
+                verificationToken = $('[name="__RequestVerificationToken"]');
+
+            $('#commands li a').on('click', function (e) {
+                $('#command').val($(this).data('command'));
+            });
+            $('#submit').on('click', function (e) {
+                e.preventDefault();
+                if (command.val() !== '' && args.val() !== '') {
+                    outputDiv.text('Executing: ' + command.val() + ' ' + args.val());
+                    $.ajax({
+                        url: viewModel.actions.executeCommand,
+                        method: "POST",
+                        data: {
+                            "Command": command.val(),
+                            "Arguments": args.val(),
+                            "__RequestVerificationToken": verificationToken.val()
+                        }
+                    }).done(function (response) {
+                        if (response.Success && response.CommandOutput.length) {
+                            processCommandOutput(outputDiv, response);
+                        }
+                        //outputDiv.text(response.CommandOutput)
+                    }).error(function (response) {
+                        outputDiv.text(response.CommandOutput);
+                    });
+                } else {
+                    outputDiv.text('Invalid input, please select a command and provide parameters');
+                }
+            });
+        });
+    </script>
+}
+
 <div class="jumbotron">
     <h1>
         Command Injection Example
@@ -13,24 +66,45 @@
     
     @using (Html.BeginForm("ProcessCommand", "Home", "POST"))
     {
+        @Html.HiddenFor(m => m.Command, new { id = "command" })
+        @Html.AntiForgeryToken()
         <div class="row">
-            <div class="col-sm-2">
-                @Html.LabelFor(m => m.Command)<br />
-                @Html.DropDownListFor(m => m.Command, new SelectList(
-                    Model.Commands,
-                    "CommandText",
-                    "CommandName"
-                ))
+            <div class="col-sm-6">
+                <div class="input-group">
+                    <div class="input-group-btn">         
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Command
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" id="commands">
+                            @foreach(var command in Model.Commands)
+                            {
+                              <li>
+                                  <a href="#" data-command="@command.CommandText">
+                                      @command.CommandName
+                                  </a>
+                              </li>
+                            }
+                        </ul>
+                        @*@Html.LabelFor(m => m.Command)<br />*@
+                        @*@Html.DropDownListFor(m => m.Command, new SelectList(
+                            Model.Commands,
+                            "CommandText",
+                            "CommandName",
+                            new { @class = "form-control" }
+                        ))*@
+                    </div>
+                    @Html.TextBoxFor(m => m.CommandArguments, new { placeholder = "Arguments...", @class = "form-control", id = "arguments" })
+                    <div class="input-group-btn">
+                        <button class="submit btn-default btn" id="submit">
+                            Execute
+                        </button>
+                    </div>
+                </div>
             </div>
-            <div class="col-sm-8">
-                @Html.LabelFor(m => m.CommandArguments)<br />
-                @Html.TextBoxFor(m => m.CommandArguments)
-            </div>
-            <div class="col-sm-2">
-                <a href="#" class="submit btn-default btn" id="submit">
-                    Execute
-                </a>
-            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12" id="command-output"></div>
         </div>
     }  
 </div>
