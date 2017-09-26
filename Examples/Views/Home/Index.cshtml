@@ -11,26 +11,26 @@
         Command Injection Example
     </h1>
     
-        @using (Html.BeginForm("ProcessCommand", "Home", "POST"))
-        {
-            <div class="row">
-                <div class="col-sm-2">
-                    @Html.LabelFor(m => m.Command)<br />
-                    @Html.DropDownListFor(m => m.Command, new SelectList(
-                        Model.Commands,
-                        "CommandText",
-                        "CommandName"
-                    ))
-                </div>
-                <div class="col-sm-8">
-                    @Html.LabelFor(m => m.CommandArguments)<br />
-                    @Html.TextBoxFor(m => m.CommandArguments)
-                </div>
-                <div class="col-sm-2">
-                    <a href="#" class="submit btn-default btn" id="submit">
-                        Execute
-                    </a>
-                </div>
+    @using (Html.BeginForm("ProcessCommand", "Home", "POST"))
+    {
+        <div class="row">
+            <div class="col-sm-2">
+                @Html.LabelFor(m => m.Command)<br />
+                @Html.DropDownListFor(m => m.Command, new SelectList(
+                    Model.Commands,
+                    "CommandText",
+                    "CommandName"
+                ))
             </div>
-        }  
+            <div class="col-sm-8">
+                @Html.LabelFor(m => m.CommandArguments)<br />
+                @Html.TextBoxFor(m => m.CommandArguments)
+            </div>
+            <div class="col-sm-2">
+                <a href="#" class="submit btn-default btn" id="submit">
+                    Execute
+                </a>
+            </div>
+        </div>
+    }  
 </div>
