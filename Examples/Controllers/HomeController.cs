@@ -34,53 +34,68 @@ namespace Examples.Controllers
       }
       return View(model);
     }
-
+    
     [HttpPost, ValidateAntiForgeryToken]
     public JsonResult ProcessCommand(CommandRequestModel model)
     {
-      var response = new CommandResponseModel();
-      Process proc;
-      if (!string.IsNullOrWhiteSpace(model.Command) && !string.IsNullOrWhiteSpace(model.Arguments))
+      if (ModelState.IsValid)
       {
-        try
-        {
-          proc = new Process
-          {
-            StartInfo = new ProcessStartInfo
-            {
-              FileName = model.Command,
-              Arguments = model.Arguments,
-              UseShellExecute = false,
-              RedirectStandardOutput = true,
-              RedirectStandardError = true,
-              CreateNoWindow = true
-            }
-          };
-          proc.Start();
-          response.CommandOutput.Add("Running: " + model.Command);
-          while (!proc.StandardOutput.EndOfStream)
-          {
-            var lineOutput = proc.StandardOutput.ReadLine();
-            if (!string.IsNullOrWhiteSpace(lineOutput))
-            {
-              response.CommandOutput.Add(lineOutput);
-            }
-          }
-          proc.Close();
-          proc.Dispose();
-          response.Success = true;
-        }
-        catch (Exception ex)
-        {
-          response.CommandOutput.Add(ex.Message);
-          //if (proc.StandardError.ToString().Length > 0)
-          //  response.CommandOutput.Add(proc.StandardError.ReadToEnd.ToString());
-        }
-      } else
+        return Json(GetCommandResponseModel(model));
+      } 
+      else
       {
+        var response = new CommandResponseModel();
         response.CommandOutput.Add("ERROR");
+        return Json(response);
       }
-      return Json(response);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public JsonResult ProcessCommandUnsafe(CommandRequestModel model)
+    {
+      return Json(GetCommandResponseModel(model));
+    }
+
+    private CommandResponseModel GetCommandResponseModel(CommandRequestModel model)
+    {
+      CommandResponseModel response = new CommandResponseModel();
+
+      try
+      {
+        Process proc = new Process
+        {
+          StartInfo = new ProcessStartInfo
+          {
+            FileName = model.Command.ToLower(),
+            Arguments = model.Arguments,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true
+          }
+        };
+        proc.Start();
+        response.CommandOutput.Add("Running: " + model.Command);
+        while (!proc.StandardOutput.EndOfStream)
+        {
+          var lineOutput = proc.StandardOutput.ReadLine();
+          if (!string.IsNullOrWhiteSpace(lineOutput))
+          {
+            response.CommandOutput.Add(lineOutput);
+          }
+        }
+        proc.Close();
+        proc.Dispose();
+        response.Success = true;
+      }
+      catch (Exception ex)
+      {
+        response.CommandOutput.Add(ex.Message);
+        //if (proc.StandardError.ToString().Length > 0)
+        //  response.CommandOutput.Add(proc.StandardError.ReadToEnd.ToString());
+      }
+
+      return response;
     }
   }
 }

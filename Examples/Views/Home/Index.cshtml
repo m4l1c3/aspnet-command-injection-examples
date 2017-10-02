@@ -11,7 +11,7 @@
         'use strict';
         var viewModel = {
             actions: {
-                'executeCommand': '@Url.Action("ProcessCommand", "Home")'
+                'executeCommand': '@(Model.SecurityLevel == Examples.Enums.SecurityLevelEnum.Low ? Url.Action("ProcessCommandUnsafe", "Home") : Url.Action("ProcessCommand","Home"))'
             }
         };
         function processCommandOutput(outputDiv, response) {
@@ -22,6 +22,29 @@
                 $('#command-output').append($.parseHTML('<li>' + item + '</li>'));
             });
         }
+        function executeCommand(command, args, outputDiv, verificationToken) {
+            if (command.val() !== '' && args.val() !== '') {
+                outputDiv.text('Executing: ' + command.val() + ' ' + args.val());
+                $.ajax({
+                    url: viewModel.actions.executeCommand,
+                    method: "POST",
+                    data: {
+                        "Command": command.val(),
+                        "Arguments": args.val(),
+                        "__RequestVerificationToken": verificationToken.val()
+                    }
+                }).done(function (response) {
+                    if (response.Success && response.CommandOutput.length) {
+                        processCommandOutput(outputDiv, response);
+                    }
+                    //outputDiv.text(response.CommandOutput)
+                }).error(function (response) {
+                    outputDiv.text(response.CommandOutput);
+                });
+            } else {
+                outputDiv.text('Invalid input, please select a command and provide parameters');
+            }
+        }
         $(document).ready(function () {
             const command = $('#command'),
                 args = $('#arguments'),
@@ -31,28 +54,18 @@
             $('#commands li a').on('click', function (e) {
                 $('#command').val($(this).data('command'));
             });
+
             $('#submit').on('click', function (e) {
                 e.preventDefault();
-                if (command.val() !== '' && args.val() !== '') {
-                    outputDiv.text('Executing: ' + command.val() + ' ' + args.val());
-                    $.ajax({
-                        url: viewModel.actions.executeCommand,
-                        method: "POST",
-                        data: {
-                            "Command": command.val(),
-                            "Arguments": args.val(),
-                            "__RequestVerificationToken": verificationToken.val()
-                        }
-                    }).done(function (response) {
-                        if (response.Success && response.CommandOutput.length) {
-                            processCommandOutput(outputDiv, response);
-                        }
-                        //outputDiv.text(response.CommandOutput)
-                    }).error(function (response) {
-                        outputDiv.text(response.CommandOutput);
-                    });
-                } else {
-                    outputDiv.text('Invalid input, please select a command and provide parameters');
+                executeCommand(command, args, outputDiv, verificationToken);
+            });
+
+            $('#arguments').on('keypress', function (e) {
+                var code = (e.keyCode ? e.keyCode : e.which);
+                if (code === 13) {
+                    ep.preventDefault();
+                    e.stopPropagation();
+                    executeCommand(command, args, outputDiv, verificationToken);
                 }
             });
         });
@@ -80,7 +93,7 @@
                             @foreach(var command in Model.Commands)
                             {
                               <li>
-                                  <a href="#" data-command="@command.CommandText">
+                                  <a href="#" data-command="@command.CommandName">
                                       @command.CommandName
                                   </a>
                               </li>

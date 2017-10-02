@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using Examples.Interfaces;
+using System.Collections.Generic;
 
 namespace Examples.Models
 {
-  public class CommandResponseModel
+  public class CommandResponseModel : ICommandResponse
   {
-    public List<string> CommandOutput { get; set; } = new List<string>();
+    public IList<string> CommandOutput { get; set; } = new List<string>();
     public bool Success { get; set; }
   }
 }
