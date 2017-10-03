@@ -1,0 +1,29 @@
+{
+  "summary": {
+    "title": "Command injection test app",
+    "owner": "M4l1c3",
+    "description": "Test threat model"
+  },
+  "detail": {
+    "contributors": [
+      {
+        "name": "M4l1c3"
+      }
+    ],
+    "diagrams": [
+      {
+        "title": "Diagram",
+        "thumbnail": "./public/content/images/thumbnail.jpg",
+        "id": 0,
+        "diagramJson": {
+          "cells": []
+        },
+        "size": {
+          "height": 590,
+          "width": 790
+        }
+      }
+    ],
+    "reviewer": "M4l1c3"
+  }
+}
